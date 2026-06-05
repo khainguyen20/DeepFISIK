@@ -1,0 +1,7 @@
+# Example experiment config
+model:
+  name: gnn_oligo
+training:
+  batch_size: 32
+  epochs: 100
+  lr: 0.0001

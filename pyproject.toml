@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deep-fisik"
+version = "0.1.0"
+description = "Graph neural network models and training scripts for interaction prediction"
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [{ name = "Your Name" }]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+deepfisik-train-oligo = "deepfisik.cli:main_oligo"
+deepfisik-train-interactions = "deepfisik.cli:main_interactions"
+deepfisik-train-dimers = "deepfisik.cli:main_interactions"
+deepfisik-predict-oligo = "deepfisik.inference.core:main_oligo"
+deepfisik-predict-interactions = "deepfisik.inference.core:main_interactions"
+deepfisik-predict-classification = "deepfisik.inference.core:main_oligo"
+deepfisik-predict-dimers = "deepfisik.inference.core:main_interactions"
+deepfisik-predict-trimers = "deepfisik.inference.core:main_interactions"
+deepfisik-predict-tetramers = "deepfisik.inference.core:main_interactions"

@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.venv/
+venv/
+outputs/
+results/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# Keep bundled pretrained checkpoints under models/
+!models/**/*.pt
+!models/**/*.md
+!Datasets/**/*.pt
+
