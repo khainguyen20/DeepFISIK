@@ -34,7 +34,7 @@ conda activate deep-fisik
 ### Install Deep-FISIK
 
 ```bash
-pip install -e .
+pip install -r requirements.txt 
 ```
 
 Verify the installation:
