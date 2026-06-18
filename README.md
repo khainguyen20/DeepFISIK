@@ -6,8 +6,8 @@ Deep-FISIK is a graph neural network framework for estimating molecular interact
 
 ## Features
 
-* Oligomer classification (monomer, dimer, trimer, tetramer)
-* Interaction parameter estimation
+* Maximum oligomer system classification (monomer, dimer, trimer, tetramer)
+* SMI parameter estimation
 * Dimer, trimer, and tetramer regression models
 * Training and inference pipelines
 * Pretrained checkpoints

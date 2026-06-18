@@ -43,8 +43,9 @@ Each row corresponds to a single particle detection.
 | Intensity               | Detection intensity          |
 | Diffusion Coefficient   | Diffusion coefficient (DC)   |
 | Receptor Density        | Receptor density (RD)        |
-| Association Probability | Association probability (AP) |
-| Dissociation Rate       | Dissociation rate (DR)       |
+| Association Probability | Association probability (AP2)|
+| Dissociation Rate       | Dissociation rate (DR2)      |
+| Labeled Fraction        | Labeled fraction (LF)        |
 
 ### Additional Columns
 
@@ -52,17 +53,17 @@ Each row corresponds to a single particle detection.
 
 | Column |
 | ------ |
-| AP2    |
-| DR2    |
+| AP3    |
+| DR3    |
 
 #### Tetramers
 
 | Column |
 | ------ |
-| AP2    |
-| DR2    |
 | AP3    |
 | DR3    |
+| AP4    |
+| DR4    |
 
 ---
 
@@ -108,8 +109,8 @@ For each pair of consecutive frames:
 ```text
 DC
 RD
-AP
-DR
+AP2
+DR2
 LF
 ```
 
@@ -118,10 +119,10 @@ LF
 ```text
 DC
 RD
-AP
-DR
 AP2
 DR2
+AP3
+DR3
 LF
 ```
 
@@ -130,12 +131,12 @@ LF
 ```text
 DC
 RD
-AP1
-DR1
 AP2
 DR2
 AP3
 DR3
+AP4
+DR4
 LF
 ```
 
