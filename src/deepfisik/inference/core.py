@@ -231,7 +231,7 @@ def run_oligo_inference(args: argparse.Namespace):
 
 
 def _run_interactions_batch_dimer(model, batch, device, time_step: float):
-    node_out, edge_out, global_out, dc, ap, dr, rd, lf = model(
+    node_out, edge_out, global_out, dc, ap2, dr2, rd, lf = model(
         batch.x,
         batch.edge_index,
         batch.edge_attr,
@@ -240,38 +240,7 @@ def _run_interactions_batch_dimer(model, batch, device, time_step: float):
     )
     predictions = {
         "DC": _safe_inverse_dc(dc, time_step),
-        "AP": _safe_inverse_linear(ap, 50.0),
-        "DR": _safe_inverse_linear(dr, 20.0 * time_step),
-        "RD": torch.clamp(rd.float(), min=0.0),
-        "LF": _safe_inverse_linear(lf, 10.0),
-    }
-    truths = (
-        {
-            "DC": batch.DC.float(),
-            "AP": batch.AP.float(),
-            "DR": batch.DR.float(),
-            "RD": batch.RD.float(),
-            "LF": batch.LF.float(),
-        }
-        if _has_truth_fields(batch, ("DC", "AP", "DR", "RD", "LF"))
-        else None
-    )
-    return predictions, truths
-
-
-def _run_interactions_batch_trimer(model, batch, device, time_step: float):
-    node_out, edge_out, global_out, dc, ap1, ap2, dr1, dr2, rd, lf = model(
-        batch.x,
-        batch.edge_index,
-        batch.edge_attr,
-        batch.batch,
-        device,
-    )
-    predictions = {
-        "DC": _safe_inverse_dc(dc, time_step),
-        "AP1": _safe_inverse_linear(ap1, 50.0),
         "AP2": _safe_inverse_linear(ap2, 50.0),
-        "DR1": _safe_inverse_linear(dr1, 20.0 * time_step),
         "DR2": _safe_inverse_linear(dr2, 20.0 * time_step),
         "RD": torch.clamp(rd.float(), min=0.0),
         "LF": _safe_inverse_linear(lf, 10.0),
@@ -279,10 +248,41 @@ def _run_interactions_batch_trimer(model, batch, device, time_step: float):
     truths = (
         {
             "DC": batch.DC.float(),
-            "AP1": batch.AP.float(),
-            "AP2": batch.AP.float(),
-            "DR1": batch.DR.float(),
-            "DR2": batch.DR.float(),
+            "AP2": batch.AP2.float(),
+            "DR2": batch.DR2.float(),
+            "RD": batch.RD.float(),
+            "LF": batch.LF.float(),
+        }
+        if _has_truth_fields(batch, ("DC", "AP2", "DR2", "RD", "LF"))
+        else None
+    )
+    return predictions, truths
+
+
+def _run_interactions_batch_trimer(model, batch, device, time_step: float):
+    node_out, edge_out, global_out, dc, ap2, ap3, dr2, dr3, rd, lf = model(
+        batch.x,
+        batch.edge_index,
+        batch.edge_attr,
+        batch.batch,
+        device,
+    )
+    predictions = {
+        "DC": _safe_inverse_dc(dc, time_step),
+        "AP2": _safe_inverse_linear(ap2, 50.0),
+        "AP2": _safe_inverse_linear(ap3, 50.0),
+        "DR3": _safe_inverse_linear(dr2, 20.0 * time_step),
+        "DR3": _safe_inverse_linear(dr3, 20.0 * time_step),
+        "RD": torch.clamp(rd.float(), min=0.0),
+        "LF": _safe_inverse_linear(lf, 10.0),
+    }
+    truths = (
+        {
+            "DC": batch.DC.float(),
+            "AP2": batch.A2.float(),
+            "AP3": batch.A3.float(),
+            "DR2": batch.D2.float(),
+            "DR3": batch.D3.float(),
             "RD": batch.RD.float(),
             "LF": batch.LF.float(),
         }
@@ -293,7 +293,7 @@ def _run_interactions_batch_trimer(model, batch, device, time_step: float):
 
 
 def _run_interactions_batch_tetramer(model, batch, device, time_step: float):
-    node_out, edge_out, global_out, dc, ap1, ap2, ap3, dr1, dr2, dr3, rd, lf = model(
+    node_out, edge_out, global_out, dc, ap2, ap3, ap4, dr2, dr3, dr4, rd, lf = model(
         batch.x,
         batch.edge_index,
         batch.edge_attr,
@@ -302,28 +302,28 @@ def _run_interactions_batch_tetramer(model, batch, device, time_step: float):
     )
     predictions = {
         "DC": _safe_inverse_dc(dc, time_step),
-        "AP1": _safe_inverse_linear(ap1, 50.0),
         "AP2": _safe_inverse_linear(ap2, 50.0),
         "AP3": _safe_inverse_linear(ap3, 50.0),
-        "DR1": _safe_inverse_linear(dr1, 20.0 * time_step),
+        "AP4": _safe_inverse_linear(ap4, 50.0),
         "DR2": _safe_inverse_linear(dr2, 20.0 * time_step),
         "DR3": _safe_inverse_linear(dr3, 20.0 * time_step),
+        "DR4": _safe_inverse_linear(dr4, 20.0 * time_step),
         "RD": torch.clamp(rd.float(), min=0.0),
         "LF": _safe_inverse_linear(lf, 10.0),
     }
     truths = (
         {
             "DC": batch.DC.float(),
-            "AP1": batch.AP1.float(),
             "AP2": batch.AP2.float(),
             "AP3": batch.AP3.float(),
-            "DR1": batch.DR1.float(),
+            "AP4": batch.AP4.float(),
             "DR2": batch.DR2.float(),
             "DR3": batch.DR3.float(),
+            "DR4": batch.DR4.float(),
             "RD": batch.RD.float(),
             "LF": batch.LF.float(),
         }
-        if _has_truth_fields(batch, ("DC", "AP1", "AP2", "AP3", "DR1", "DR2", "DR3", "RD", "LF"))
+        if _has_truth_fields(batch, ("DC", "AP2", "AP3", "AP4", "DR2", "DR3", "DR4", "RD", "LF"))
         else None
     )
     return predictions, truths
@@ -366,7 +366,7 @@ def run_dimer_inference(args: argparse.Namespace):
         args,
         "dimer",
         _run_interactions_batch_dimer,
-        ("DC", "AP", "DR", "RD", "LF"),
+        ("DC", "AP2", "DR2", "RD", "LF"),
     )
 
 
@@ -376,7 +376,7 @@ def run_trimer_inference(args: argparse.Namespace):
         args,
         "trimer",
         _run_interactions_batch_trimer,
-        ("DC", "AP1", "AP2", "DR1", "DR2", "RD", "LF"),
+        ("DC", "AP2", "AP3", "DR2", "DR3", "RD", "LF"),
     )
 
 
@@ -386,7 +386,7 @@ def run_tetramer_inference(args: argparse.Namespace):
         args,
         "tetramer",
         _run_interactions_batch_tetramer,
-        ("DC", "AP1", "AP2", "AP3", "DR1", "DR2", "DR3", "RD", "LF"),
+        ("DC", "AP2", "AP3", "AP4", "DR2", "DR3", "DR4", "RD", "LF"),
     )
 
 

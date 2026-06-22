@@ -41,8 +41,8 @@ def getMinimumSource(graph,minAmount):
 
     uniqueObjects = graph['objectID_N'].drop_duplicates().index.to_numpy()
 
-    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','Association Probability',
-'Dissociation Rate'])
+    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP2',
+'DR2','Labeled Fraction'])
 
     for i in range(len(uniqueObjects)):
         if i!= len(uniqueObjects)-1:
@@ -68,8 +68,8 @@ def getMinimumTarget(graph,minAmount):
 
     uniqueObjects = graph['objectID_N1'].drop_duplicates().index.to_numpy()
 
-    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','Association Probability',
-'Dissociation Rate'])
+    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP2',
+'DR2','Labeled Fraction'])
 
     for i in range(len(uniqueObjects)):
         if i!= len(uniqueObjects)-1:
@@ -95,7 +95,7 @@ def trimGraph(graphSource, graphTarget):
 
     return combinedGraph
 
-def GraphGeneratorUN(simulationData, r):
+def GraphGeneratorDimers(simulationData, r):
 
     """
     This function generates a graph with the information with each node/detections per frame
@@ -127,8 +127,8 @@ def GraphGeneratorUN(simulationData, r):
             frames.append(simulationData.iloc[index_frame[i]:index_frame[i+1]])
         else:
             frames.append(simulationData.iloc[index_frame[i]:])
-    graph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','Association Probability',
-'Dissociation Rate'])
+    graph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP2',
+'DR2','Labeled Fraction'])
 
     for i in range(len(frames)-1):
 
@@ -152,8 +152,9 @@ def GraphGeneratorUN(simulationData, r):
 
         DC = t_n['Diffusion Coefficient'].to_numpy()
         RD = t_n['Receptor Density'].to_numpy()
-        AP = t_n['Association Probability'].to_numpy()
-        DR = t_n['Dissociation Rate'].to_numpy()
+        AP2 = t_n['AP2'].to_numpy()
+        DR2 = t_n['DR2'].to_numpy()
+        LF = t_n['Labeled Fraction'].to_numpy()
 
         edge_distances = cdist(np.array([X_N_coord, Y_N_coord]).T, np.array([X_N1_coord, Y_N1_coord]).T,'euclidean')
         find_edge_distance_index = np.where(edge_distances < r)
@@ -169,13 +170,14 @@ def GraphGeneratorUN(simulationData, r):
         framesN1 = pd.DataFrame((np.zeros(shape = (X_N_coordFiltered.shape[0],1)) + i + 1).astype(int), columns=['framesN1'])
         DCFiltered = pd.DataFrame(DC[find_edge_distance_index[0]],columns=['Diffusion Coefficient'])
         RDFiltered = pd.DataFrame(RD[find_edge_distance_index[0]],columns=['Receptor Density'])
-        APFiltered = pd.DataFrame(AP[find_edge_distance_index[0]],columns=['Association Probability'])
-        DRFiltered = pd.DataFrame(DR[find_edge_distance_index[0]],columns=['Dissociation Rate'])
+        AP2Filtered = pd.DataFrame(AP2[find_edge_distance_index[0]],columns=['AP2'])
+        DR2Filtered = pd.DataFrame(DR2[find_edge_distance_index[0]],columns=['DR2'])
+        LFFiltered = pd.DataFrame(LF[find_edge_distance_index[0]],columns=['Labeled Fraction'])
         objectID_NFiltered = pd.DataFrame(objectID_N[find_edge_distance_index[0]],columns=['objectID_N'])
         objectID_N1Filtered = pd.DataFrame(objectID_N1[find_edge_distance_index[1]],columns=['objectID_N1'])
         intensityDifferenceFiltered = pd.DataFrame(intensityDifference[find_edge_distance_index],columns=['intensity_difference'])
 
-        edges=pd.concat([framesN,objectID_NFiltered,X_N_coordFiltered,Y_N_coordFiltered,intensityNFiltered,framesN1,objectID_N1Filtered,X_N1_coordFiltered,Y_N1_coordFiltered,intensityN1Filtered,edge_distanceFiltered, intensityDifferenceFiltered,DCFiltered, RDFiltered, APFiltered, DRFiltered],axis=1)
+        edges=pd.concat([framesN,objectID_NFiltered,X_N_coordFiltered,Y_N_coordFiltered,intensityNFiltered,framesN1,objectID_N1Filtered,X_N1_coordFiltered,Y_N1_coordFiltered,intensityN1Filtered,edge_distanceFiltered, intensityDifferenceFiltered,DCFiltered, RDFiltered, AP2Filtered, DR2Filtered,LFFiltered],axis=1)
 
         graph=pd.concat([graph,edges])
 

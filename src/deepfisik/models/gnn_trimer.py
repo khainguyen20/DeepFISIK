@@ -70,10 +70,10 @@ class GNNTrimer(torch.nn.Module):
         self.linear2 = Linear(node_embedding_size, int(node_embedding_size/2))
         self.linear3 = Linear(int(node_embedding_size/2), int(node_embedding_size/4))
         self.DCOut = Linear(int(node_embedding_size/4), 1)
-        self.AP1Out = Linear(int(node_embedding_size/4), 1)
-        self.DR1Out = Linear(int(node_embedding_size/4), 1)
         self.AP2Out = Linear(int(node_embedding_size/4), 1)
         self.DR2Out = Linear(int(node_embedding_size/4), 1)
+        self.AP3Out = Linear(int(node_embedding_size/4), 1)
+        self.DR3Out = Linear(int(node_embedding_size/4), 1)
         self.RDOut = Linear(int(node_embedding_size/4), 1)
         self.LFOut = Linear(int(node_embedding_size/4), 1)
 
@@ -102,11 +102,11 @@ class GNNTrimer(torch.nn.Module):
         u = torch.nn.functional.gelu(self.linear2(u))
         u = torch.nn.functional.gelu(self.linear3(u))
         DC = self.DCOut(u)
-        AP1 = self.AP1Out(u)
-        DR1 = self.DR1Out(u)
         AP2 = self.AP2Out(u)
         DR2 = self.DR2Out(u)
+        AP3 = self.AP3Out(u)
+        DR3 = self.DR3Out(u)
         RD = self.RDOut(u)
         LF = self.LFOut(u)
         edge_attr = self.edge_decode(edge_attr)
-        return x, edge_attr, u,DC,AP1,AP2, DR1,DR2,RD,LF #gelu1, gelu2#, attention_coeffs
+        return x, edge_attr, u,DC,AP2,AP3, DR2,DR3,RD,LF #gelu1, gelu2#, attention_coeffs

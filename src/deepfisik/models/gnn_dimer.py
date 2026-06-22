@@ -70,8 +70,8 @@ class GNNDimer(torch.nn.Module):
         self.linear2 = Linear(node_embedding_size, int(node_embedding_size/2))
         self.linear3 = Linear(int(node_embedding_size/2), int(node_embedding_size/4))
         self.DCOut = Linear(int(node_embedding_size/4), 1)
-        self.APOut = Linear(int(node_embedding_size/4), 1)
-        self.DROut = Linear(int(node_embedding_size/4), 1)
+        self.AP2Out = Linear(int(node_embedding_size/4), 1)
+        self.DR2Out = Linear(int(node_embedding_size/4), 1)
         self.RDOut = Linear(int(node_embedding_size/4), 1)
         self.LFOut = Linear(int(node_embedding_size/4), 1)
 
@@ -100,10 +100,10 @@ class GNNDimer(torch.nn.Module):
         u = torch.nn.functional.gelu(self.linear2(u))
         u = torch.nn.functional.gelu(self.linear3(u))
         DC = self.DCOut(u)
-        AP = self.APOut(u)
-        DR = self.DROut(u)
+        AP2 = self.AP2Out(u)
+        DR2 = self.DR2Out(u)
         RD = self.RDOut(u)
         LF = self.LFOut(u)
         edge_attr = self.edge_decode(edge_attr)
-        return x, edge_attr, u,DC,AP, DR,RD,LF #gelu1, gelu2#, attention_coeffs
+        return x, edge_attr, u,DC,AP2, DR2,RD,LF #gelu1, gelu2#, attention_coeffs
 

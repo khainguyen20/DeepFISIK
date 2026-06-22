@@ -41,8 +41,8 @@ def getMinimumSource(graph,minAmount):
 
     uniqueObjects = graph['objectID_N'].drop_duplicates().index.to_numpy()
 
-    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP1',
-'DR1','AP2','DR2','AP3','DR3'])
+    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP2',
+'DR2','AP3','DR3','AP4','DR4','Labeled Fraction'])
 
     for i in range(len(uniqueObjects)):
         if i!= len(uniqueObjects)-1:
@@ -68,8 +68,8 @@ def getMinimumTarget(graph,minAmount):
 
     uniqueObjects = graph['objectID_N1'].drop_duplicates().index.to_numpy()
 
-    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP1',
-'DR1','AP2','DR2','AP3','DR3'])
+    newGraph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP2',
+'DR2','AP3','DR3','AP4','DR4','Labeled Fraction'])
 
     for i in range(len(uniqueObjects)):
         if i!= len(uniqueObjects)-1:
@@ -127,8 +127,8 @@ def GraphGeneratorTetramers(simulationData, r):
             frames.append(simulationData.iloc[index_frame[i]:index_frame[i+1]])
         else:
             frames.append(simulationData.iloc[index_frame[i]:])
-    graph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP1',
-'DR1','AP2','DR2','AP3','DR3'])
+    graph=pd.DataFrame(columns=['framesN','objectID_N','X_N','Y_N','Intensity_N','framesN1','objectID_N1','X_N1','Y_N1','Intensity_N1','edge_distance','intensity_difference','Diffusion Coefficient','Receptor Density','AP2',
+'DR2','AP3','DR3','AP4','DR4','Labeled Fraction'])
 
     for i in range(len(frames)-1):
 
@@ -152,12 +152,13 @@ def GraphGeneratorTetramers(simulationData, r):
 
         DC = t_n['Diffusion Coefficient'].to_numpy()
         RD = t_n['Receptor Density'].to_numpy()
-        AP1 = t_n['AP1'].to_numpy()
-        DR1 = t_n['DR1'].to_numpy()
         AP2 = t_n['AP2'].to_numpy()
         DR2 = t_n['DR2'].to_numpy()
         AP3 = t_n['AP3'].to_numpy()
         DR3 = t_n['DR3'].to_numpy()
+        AP4 = t_n['AP4'].to_numpy()
+        DR4 = t_n['DR4'].to_numpy()
+        LF = t_n['Labeled Fraction'].to_numpy()
 
         edge_distances = cdist(np.array([X_N_coord, Y_N_coord]).T, np.array([X_N1_coord, Y_N1_coord]).T,'euclidean')
         find_edge_distance_index = np.where(edge_distances < r)
@@ -173,17 +174,18 @@ def GraphGeneratorTetramers(simulationData, r):
         framesN1 = pd.DataFrame((np.zeros(shape = (X_N_coordFiltered.shape[0],1)) + i + 1).astype(int), columns=['framesN1'])
         DCFiltered = pd.DataFrame(DC[find_edge_distance_index[0]],columns=['Diffusion Coefficient'])
         RDFiltered = pd.DataFrame(RD[find_edge_distance_index[0]],columns=['Receptor Density'])
-        AP1Filtered = pd.DataFrame(AP1[find_edge_distance_index[0]],columns=['AP1'])
-        DR1Filtered = pd.DataFrame(DR1[find_edge_distance_index[0]],columns=['DR1'])
         AP2Filtered = pd.DataFrame(AP2[find_edge_distance_index[0]],columns=['AP2'])
         DR2Filtered = pd.DataFrame(DR2[find_edge_distance_index[0]],columns=['DR2'])
         AP3Filtered = pd.DataFrame(AP3[find_edge_distance_index[0]],columns=['AP3'])
         DR3Filtered = pd.DataFrame(DR3[find_edge_distance_index[0]],columns=['DR3'])
+        AP4Filtered = pd.DataFrame(AP4[find_edge_distance_index[0]],columns=['AP4'])
+        DR4Filtered = pd.DataFrame(DR4[find_edge_distance_index[0]],columns=['DR4'])
+        LFFiltered = pd.DataFrame(LF[find_edge_distance_index[0]],columns=['Labeled Fraction'])
         objectID_NFiltered = pd.DataFrame(objectID_N[find_edge_distance_index[0]],columns=['objectID_N'])
         objectID_N1Filtered = pd.DataFrame(objectID_N1[find_edge_distance_index[1]],columns=['objectID_N1'])
         intensityDifferenceFiltered = pd.DataFrame(intensityDifference[find_edge_distance_index],columns=['intensity_difference'])
 
-        edges=pd.concat([framesN,objectID_NFiltered,X_N_coordFiltered,Y_N_coordFiltered,intensityNFiltered,framesN1,objectID_N1Filtered,X_N1_coordFiltered,Y_N1_coordFiltered,intensityN1Filtered,edge_distanceFiltered, intensityDifferenceFiltered,DCFiltered, RDFiltered, AP1Filtered, DR1Filtered,AP2Filtered, DR2Filtered,AP3Filtered, DR3Filtered],axis=1)
+        edges=pd.concat([framesN,objectID_NFiltered,X_N_coordFiltered,Y_N_coordFiltered,intensityNFiltered,framesN1,objectID_N1Filtered,X_N1_coordFiltered,Y_N1_coordFiltered,intensityN1Filtered,edge_distanceFiltered, intensityDifferenceFiltered,DCFiltered, RDFiltered, AP2Filtered, DR2Filtered,AP3Filtered, DR3Filtered,AP4Filtered, DR4Filtered,LFFiltered],axis=1)
 
         graph=pd.concat([graph,edges])
 

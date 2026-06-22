@@ -8,7 +8,7 @@ import torch
 from torch_geometric.data import Dataset, Data
 from tqdm import tqdm
 import scipy.io
-from deepfisik.data.graph_generator_interactions_un import *
+from deepfisik.data.graph_generator_interactions_dimers import *
 
 import re
 
@@ -138,69 +138,69 @@ def get_DC(data):
     return torch.tensor(label, dtype=torch.float)
 
 def get_AP(data):
-    AP = np.asarray(data['Association Probability'])[0]
+    AP = np.asarray(data['AP2'])[0]
 
     return torch.tensor(AP, dtype = torch.float)
 
 def get_DR(data):
-    DR = np.asarray(data['Dissociation Rate'])[0]
+    DR = np.asarray(data['DR2'])[0]
 
     return torch.tensor(DR, dtype = torch.float)
 def get_LF(data):
-    LF = np.asarray(data['Label Fraction'])[0]
+    LF = np.asarray(data['Labeled Fraction'])[0]
 
     return LF
 
 def process_single_file(args):
-    raw_path, idx, r, Imean, labelFraction, processed_dir = args
+    raw_path, idx, r, Imean, processed_dir = args
 
     df = pd.read_csv(raw_path).reset_index(drop=True)
     sim = df
 
-    graph = GraphGeneratorUN(sim, r)
+    graph = GraphGeneratorDimers(sim, r)
 
     node_feats = get_node_features(sim)
     edge_feats = get_edge_features(graph, r, Imean)
     edge_index = get_adjacency_info(graph)
     RD = get_RD(graph)
     DC = get_DC(graph)
-    AP = get_AP(graph)
-    DR = get_DR(graph)
+    AP2 = get_AP(graph)
+    DR2 = get_DR(graph)
+    LF = get_LF(graph)
 
     data = Data(x=node_feats,
         edge_index=edge_index,
         edge_attr=edge_feats,
         DC=DC, RD = RD,
-        AP = AP, DR = DR,
-        LF = labelFraction
+        AP2 = AP2, DR2 = DR2,
+        LF = LF
         )
 
     filename = f'data_{idx}.pt'
     torch.save(data, os.path.join(processed_dir, filename))
 
-def process(raw_paths,mat_path,save_path,numberToProcess,missingNumbers):
+def process(raw_paths,save_path,numberToProcess,missingNumbers):
     r = 1.5/.081
     Imean = 1000/((2**16)-1)
 
-    mat = scipy.io.loadmat(mat_path)
-    labelFractions = mat['LF'].flatten()
+
+    
 
     args_list = []
     for raw_path in raw_paths:
         fname = os.path.basename(raw_path)
         idx = int(re.search(r'graph_(\d+)\.csv', fname).group(1))
 
-        labelFraction = labelFractions[idx]
+        
 
         args_list.append(
-            (raw_path, idx, r, Imean, labelFraction, save_path)
+            (raw_path, idx, r, Imean, save_path)
         )
 
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         list(tqdm(executor.map(process_single_file,args_list),total=len(args_list)))
 
 raw_paths = 'Datasets/superGraph/1/raw/'
-mat_path = 'Datasets/superGraph/DC_RD_AP_DR/simParamMATLAB_All_2026_02_05.mat'
 save_path = 'Datasets/superGraph/1/processed/'
 
 file_names = os.listdir(save_path)
@@ -218,4 +218,4 @@ missing_numbers = np.setdiff1d(total_array, numbers_sorted)
 
 sorted_raw_path = get_sorted_full_paths_numerically(raw_paths)
 numberToProcess=599
-dataset = process(sorted_raw_path,mat_path,save_path,numberToProcess,missing_numbers)
+dataset = process(sorted_raw_path,save_path,numberToProcess,missing_numbers)

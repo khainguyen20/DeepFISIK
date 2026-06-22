@@ -137,12 +137,6 @@ def get_DC(data):
 
     return torch.tensor(label, dtype=torch.float)
 
-def get_AP1(data):
-
-    AP1 = np.asarray(data['AP1'])[0]
-
-    return torch.tensor(AP1, dtype = torch.float)
-
 def get_AP2(data):
 
     AP2 = np.asarray(data['AP2'])[0]
@@ -155,11 +149,11 @@ def get_AP3(data):
 
     return torch.tensor(AP3, dtype = torch.float)
 
-def get_DR1(data):
+def get_AP4(data):
 
-    DR1 = np.asarray(data['DR1'])[0]
+    AP4 = np.asarray(data['AP4'])[0]
 
-    return torch.tensor(DR1, dtype = torch.float)
+    return torch.tensor(AP4, dtype = torch.float)
 
 def get_DR2(data):
 
@@ -173,13 +167,19 @@ def get_DR3(data):
 
     return torch.tensor(DR3, dtype = torch.float)
 
+def get_DR4(data):
+
+    DR4 = np.asarray(data['DR4'])[0]
+
+    return torch.tensor(DR4, dtype = torch.float)
+
 def get_LF(data):
-    LF = np.asarray(data['Label Fraction'])[0]
+    LF = np.asarray(data['Labeled Fraction'])[0]
 
     return LF
 
 def process_single_file(args):
-    raw_path, idx, r, Imean, labelFraction, processed_dir = args
+    raw_path, idx, r, Imean, processed_dir = args
 
     df = pd.read_csv(raw_path).reset_index(drop=True)
     index_movies = df['Movie'].drop_duplicates().index.to_numpy()
@@ -197,48 +197,46 @@ def process_single_file(args):
         edge_index = get_adjacency_info(graph)
         RD = get_RD(graph)
         DC = get_DC(graph)
-        AP1 = get_AP1(graph)
-        DR1 = get_DR1(graph)
         AP2 = get_AP2(graph)
         DR2 = get_DR2(graph)
         AP3 = get_AP3(graph)
         DR3 = get_DR3(graph)
+        AP4 = get_AP4(graph)
+        DR4 = get_DR4(graph)
+        LF = get_LF(graph)
 
         data = Data(x=node_feats,
             edge_index=edge_index,
             edge_attr=edge_feats,
             DC=DC, RD = RD,
-            AP1 = AP1, DR1 = DR1,
-            AP2 = AP2,DR2 = DR2,
-            AP3 = AP3, DR3 =DR3,
-            LF = labelFraction
+            AP2 = AP2, DR2 = DR2,
+            AP3 = AP3,DR3 = DR3,
+            AP4 = AP4, DR4 =DR4,
+            LF = LF
             )
 
         filename = f'data_{idx}.pt'
         torch.save(data, os.path.join(processed_dir, filename))
 
-def process(raw_paths,mat_path,save_path,numberToProcess):
+def process(raw_paths,save_path,numberToProcess):
 
     r = 1.5
     Imean = 1
 
-    mat = scipy.io.loadmat(mat_path)
-    labelFractions = mat['LF'].flatten()
+    
 
     args_list = []
     for raw_path in raw_paths:
         idx = extract_number(os.path.basename(raw_path))
-        labelFraction = labelFractions[idx]
-        args_list.append((raw_path, idx, r, Imean, labelFraction, save_path))
+        args_list.append((raw_path, idx, r, Imean, save_path))
     args_list = args_list[0:numberToProcess]
 
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         list(tqdm(executor.map(process_single_file,args_list),total=len(args_list)))
 
 raw_paths = '/project/biophysics/jaqaman_lab/interKinetics/knguyen/GNN/2025/data/dataInteractionsPureSimTetramers_20250725/raw/'
-mat_path = '/project/biophysics/jaqaman_lab/interKinetics/knguyen/GNN/2025/data/dataInteractionsPureSimTetramers_20250725/DC_RD_AP_DR/simParamMATLAB_All_2024_07_24.mat'
 save_path = '/project/biophysics/jaqaman_lab/interKinetics/knguyen/GNN/2025/data/dataInteractionsPureSimTetramers_20250725/processed/'
 
 sorted_raw_path = get_sorted_full_paths_numerically(raw_paths)
 numberToProcess=30000
-dataset = process(sorted_raw_path,mat_path,save_path,numberToProcess)
+dataset = process(sorted_raw_path,save_path,numberToProcess)

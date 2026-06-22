@@ -13,8 +13,8 @@ def train(device,train_loader, model, time_step, optimizer, criterion):
     model.train()
 
     lossesDC = []
-    lossesAP = []
-    lossesDR = []
+    lossesAP2 = []
+    lossesDR2 = []
     lossesRD = []
     lossesLF = []
     losses = []
@@ -31,34 +31,34 @@ def train(device,train_loader, model, time_step, optimizer, criterion):
         edge_index = data.edge_index.long()
         batch_index = data.batch
         if torch.cuda.device_count() > 1:
-            node_out, edge_out, global_out, DC, AP, DR,RD,LF = model(x, edge_attr, edge_index, batch_index, device)
+            node_out, edge_out, global_out, DC, AP2, DR2,RD,LF = model(x, edge_attr, edge_index, batch_index, device)
 
             true_DC = torch.cat([datalist.DC.reshape(1) for datalist in data]).to(DC.device)
             true_DC = torch.sqrt(2*true_DC*time_step)
             true_DC = true_DC.reshape(true_DC.size()[0],1)
 
-            true_AP = torch.cat([datalist.AP.reshape(1) for datalist in data]).to(AP.device)
-            true_AP = true_AP.reshape(true_AP.size()[0],1)
+            true_AP2 = torch.cat([datalist.AP2.reshape(1) for datalist in data]).to(AP2.device)
+            true_AP2 = true_AP2.reshape(true_AP2.size()[0],1)
 
-            true_DR = torch.cat([datalist.DR.reshape(1) for datalist in data]).to(DR.device)
-            true_DR = true_DR.reshape(true_DR.size()[0],1)
+            true_DR2 = torch.cat([datalist.DR2.reshape(1) for datalist in data]).to(DR2.device)
+            true_DR2 = true_DR2.reshape(true_DR2.size()[0],1)
         else:
 
-            node_out, edge_out, global_out,DC,AP,DR,RD,LF = model(data.x.to(device),data.edge_index.long().to(device),data.edge_attr.to(device), data.batch.to(device), device)
+            node_out, edge_out, global_out,DC,AP2,DR2,RD,LF = model(data.x.to(device),data.edge_index.long().to(device),data.edge_attr.to(device), data.batch.to(device), device)
 
             true_DC = data.DC.float().to(device)
             true_DC = torch.sqrt(2*true_DC*time_step)*30 #getting the true DC values
             true_DC = true_DC.reshape(true_DC.size()[0],1)
-            true_AP = data.AP.float().to(device)*50 # getting the true AP values
-            true_AP = true_AP.reshape(true_AP.size()[0],1)
-            true_DR = data.DR.float().to(device)*20*time_step  # getting the true DR values
-            true_DR = true_DR.reshape(true_DR.size()[0],1)
+            true_AP2 = data.AP2.float().to(device)*50 # getting the true AP values
+            true_AP2 = true_AP2.reshape(true_AP.size()[0],1)
+            true_DR2 = data.DR2.float().to(device)*20*time_step  # getting the true DR values
+            true_DR2 = true_DR2.reshape(true_DR.size()[0],1)
             true_RD = data.RD.float().to(device)
             true_RD = true_RD.reshape(true_RD.size()[0],1)
             true_LF = data.LF.float().to(device) * 10
             true_LF = true_LF.reshape(true_LF.size()[0],1)
 
-        lossDC,lossAP,lossDR,lossRD,lossLF,loss = criterion([true_DC,true_AP,true_DR,true_RD,true_LF],[DC,AP,DR,RD,LF]) # calculate loss for DC, AP, DR, and summed losses
+        lossDC,lossAP2,lossDR2,lossRD,lossLF,loss = criterion([true_DC,true_AP2,true_DR2,true_RD,true_LF],[DC,AP2,DR2,RD,LF]) # calculate loss for DC, AP, DR, and summed losses
 
         tBack = time.time()
         loss.backward()  # Derive gradients.
@@ -67,12 +67,12 @@ def train(device,train_loader, model, time_step, optimizer, criterion):
 
         losses.append(loss.item())
         lossesDC.append(lossDC.item())
-        lossesAP.append(lossAP.item())
-        lossesDR.append(lossDR.item())
+        lossesAP2.append(lossAP2.item())
+        lossesDR2.append(lossDR2.item())
         lossesRD.append(lossRD.item())
         lossesLF.append(lossLF.item())
 
-    return np.mean(losses), np.mean(lossesDC), np.mean(lossesAP), np.mean(lossesDR),np.mean(lossesRD),np.mean(lossesLF)#, np.asarray(residuals_trainDC).flatten(), np.asarray(residuals_trainAP).flatten(), np.asarray(residuals_trainDR).flatten()
+    return np.mean(losses), np.mean(lossesDC), np.mean(lossesAP2), np.mean(lossesDR2),np.mean(lossesRD),np.mean(lossesLF)#, np.asarray(residuals_trainDC).flatten(), np.asarray(residuals_trainAP).flatten(), np.asarray(residuals_trainDR).flatten()
 
 def test(device,loader, model, time_step,criterion):
 
@@ -80,8 +80,8 @@ def test(device,loader, model, time_step,criterion):
 
     losses = []
     lossesDC = []
-    lossesAP = []
-    lossesDR = []
+    lossesAP2 = []
+    lossesDR2 = []
     lossesRD = []
     lossesLF = []
     scores = []
@@ -101,50 +101,50 @@ def test(device,loader, model, time_step,criterion):
             batch_index = data.batch
 
             if torch.cuda.device_count() > 1:
-                node_out, edge_out, global_out, DC, AP, DR,RD,LF = model(x, edge_attr, edge_index, batch_index, device)
+                node_out, edge_out, global_out, DC, AP2, DR2,RD,LF = model(x, edge_attr, edge_index, batch_index, device)
 
                 true_DC = torch.cat([datalist.DC.reshape(1) for datalist in data]).to(DC.device)
                 true_DC = torch.sqrt(2*true_DC*time_step)
                 true_DC = true_DC.reshape(true_DC.size()[0],1)
-                true_AP = torch.cat([datalist.AP.reshape(1) for datalist in data]).to(AP.device)
-                true_AP = true_AP.reshape(true_AP.size()[0],1)
-                true_DR = torch.cat([datalist.DR.reshape(1) for datalist in data]).to(DR.device)
-                true_DR = true_DR.reshape(true_DR.size()[0],1)
+                true_AP2 = torch.cat([datalist.AP2.reshape(1) for datalist in data]).to(AP2.device)
+                true_AP2 = true_AP2.reshape(true_AP2.size()[0],1)
+                true_DR2 = torch.cat([datalist.DR2.reshape(1) for datalist in data]).to(DR2.device)
+                true_DR2 = true_DR2.reshape(true_DR2.size()[0],1)
             else:
 
-                node_out, edge_out, global_out,DC,AP,DR,RD,LF = model(data.x.to(device),data.edge_index.long().to(device),data.edge_attr.to(device), data.batch.to(device), device)
+                node_out, edge_out, global_out,DC,AP2,DR2,RD,LF = model(data.x.to(device),data.edge_index.long().to(device),data.edge_attr.to(device), data.batch.to(device), device)
 
                 true_DC = data.DC.float().to(device)
                 true_DC = torch.sqrt(2*true_DC*time_step)*30 #getting the true DC values
                 true_DC = true_DC.reshape(true_DC.size()[0],1)
-                true_AP = data.AP.float().to(device)*50 # getting the true AP values
-                true_AP = true_AP.reshape(true_AP.size()[0],1)
-                true_DR = data.DR.float().to(device)*20*time_step  # getting the true DR values
-                true_DR = true_DR.reshape(true_DR.size()[0],1)
+                true_AP2 = data.AP2.float().to(device)*50 # getting the true AP values
+                true_AP2 = true_AP2.reshape(true_AP2.size()[0],1)
+                true_DR2 = data.DR2.float().to(device)*20*time_step  # getting the true DR values
+                true_DR2 = true_DR2.reshape(true_DR2.size()[0],1)
                 true_RD = data.RD.float().to(device)
                 true_RD = true_RD.reshape(true_RD.size()[0],1)
                 true_LF = data.LF.float().to(device) * 10
                 true_LF = true_LF.reshape(true_LF.size()[0],1)
 
-            lossDC,lossAP,lossDR,lossRD,lossLF,loss = criterion([true_DC,true_AP,true_DR,true_RD,true_LF],[DC,AP,DR,RD,LF]) # calculate loss for DC, AP, DR, and summed losses
+            lossDC,lossAP2,lossDR2,lossRD,lossLF,loss = criterion([true_DC,true_AP2,true_DR2,true_RD,true_LF],[DC,AP2,DR2,RD,LF]) # calculate loss for DC, AP, DR, and summed losses
 
             losses.append(loss.item())
             lossesDC.append(lossDC.item())
-            lossesAP.append(lossAP.item())
-            lossesDR.append(lossDR.item())
+            lossesAP2.append(lossAP2.item())
+            lossesDR2.append(lossDR2.item())
             lossesRD.append(lossRD.item())
             lossesLF.append(lossLF.item())
 
     accuracy = np.mean(losses)
     accuracyDC = np.mean(lossesDC)
-    accuracyAP = np.mean(lossesAP)
-    accuracyDR = np.mean(lossesDR)
+    accuracyAP2 = np.mean(lossesAP2)
+    accuracyDR2 = np.mean(lossesDR2)
     accuracyRD = np.mean(lossesRD)
     accuracyLF = np.mean(lossesLF)
     results.append(accuracy)
     results.append(accuracyDC)
-    results.append(accuracyAP)
-    results.append(accuracyDR)
+    results.append(accuracyAP2)
+    results.append(accuracyDR2)
     results.append(accuracyRD)
     results.append(accuracyLF)
 
@@ -210,20 +210,20 @@ def train_testDimers(
     loss, train_score, test_score, test_pred, test_true = [], [], [], [], []
 
     lossDC = []
-    lossAP = []
-    lossDR = []
+    lossAP2 = []
+    lossDR2 = []
     lossRD = []
     lossLF = []
 
     train_scoreDC = []
-    train_scoreAP = []
-    train_scoreDR = []
+    train_scoreAP2 = []
+    train_scoreDR2 = []
     train_scoreRD = []
     train_scoreLF = []
 
     test_scoreDC = []
-    test_scoreAP = []
-    test_scoreDR = []
+    test_scoreAP2 = []
+    test_scoreDR2 = []
     test_scoreRD = []
     test_scoreLF = []
 
@@ -243,24 +243,24 @@ def train_testDimers(
         trainResults = train(device, train_loader, model, time_step, optimizer, criterion)
         loss += [trainResults[0]]
         lossDC += [trainResults[1]]
-        lossAP += [trainResults[2]]
-        lossDR += [trainResults[3]]
+        lossAP2 += [trainResults[2]]
+        lossDR2 += [trainResults[3]]
         lossRD += [trainResults[4]]
         lossLF += [trainResults[5]]
         train_validation = test(device, train_loader, model,time_step,criterion)
         trainAccuracy = train_validation#train_validation[0]
         train_score += [trainAccuracy[0]]
         train_scoreDC += [trainAccuracy[1]]
-        train_scoreAP += [trainAccuracy[2]]
-        train_scoreDR += [trainAccuracy[3]]
+        train_scoreAP2 += [trainAccuracy[2]]
+        train_scoreDR2 += [trainAccuracy[3]]
         train_scoreRD += [trainAccuracy[4]]
         train_scoreLF += [trainAccuracy[5]]
         test_validation = test(device,test_loader, model, time_step, criterion)
         testAccuracy = test_validation#test_validation[0]
         test_score += [testAccuracy[0]]
         test_scoreDC += [testAccuracy[1]]
-        test_scoreAP += [testAccuracy[2]]
-        test_scoreDR += [testAccuracy[3]]
+        test_scoreAP2 += [testAccuracy[2]]
+        test_scoreDR2 += [testAccuracy[3]]
         test_scoreRD += [testAccuracy[4]]
         test_scoreLF += [testAccuracy[5]]
 
@@ -270,9 +270,9 @@ def train_testDimers(
             print(f'Epoch: {epoch+1:03d}, Loss: {loss[-1]:.4f}, Train: {train_score[-1]:.4f}, Test: {test_score[-1]:.4f}')
 
         results = pd.DataFrame({
-            'loss': loss, 'lossDC':lossDC,'lossAP':lossAP,'lossDR':lossDR,'lossRD':lossRD,'lossLF':lossLF,
-            'train_score': train_score, 'train_scoreDC': train_scoreDC,'train_scoreAP': train_scoreAP,'train_scoreDR': train_scoreDR,'train_scoreRD':train_scoreRD,'train_scoreLF':train_scoreLF,
-            'test_score': test_score, 'test_scoreDC': test_scoreDC, 'test_scoreAP': test_scoreAP, 'test_scoreDR': test_scoreDR,'test_scoreRD':test_scoreRD,'test_scoreLF':test_scoreLF,
+            'loss': loss, 'lossDC':lossDC,'lossAP2':lossAP2,'lossDR2':lossDR2,'lossRD':lossRD,'lossLF':lossLF,
+            'train_score': train_score, 'train_scoreDC': train_scoreDC,'train_scoreAP2': train_scoreAP2,'train_scoreDR': train_scoreDR2,'train_scoreRD2':train_scoreRD,'train_scoreLF':train_scoreLF,
+            'test_score': test_score, 'test_scoreDC': test_scoreDC, 'test_scoreAP2': test_scoreAP2, 'test_scoreDR2': test_scoreDR2,'test_scoreRD':test_scoreRD,'test_scoreLF':test_scoreLF,
             'time':(time.time()-t0)/60
         })
 
