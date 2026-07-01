@@ -197,8 +197,8 @@ def process_single_file(args):
     torch.save(data, os.path.join(processed_dir, filename))
 
 def process(raw_paths,save_path,numberToProcess,missingNumbers):
-    r = 1.5/.081
-    Imean = 1000/((2**16)-1)
+    r = 1.5
+    Imean = 1
 
 
     
@@ -217,8 +217,8 @@ def process(raw_paths,save_path,numberToProcess,missingNumbers):
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         list(tqdm(executor.map(process_single_file,args_list),total=len(args_list)))
 
-raw_paths = 'Datasets/superGraph/1/raw/'
-save_path = 'Datasets/superGraph/1/processed/'
+raw_paths = 'Datasets/PureSimulations/MonomerDataset/raw/'
+save_path = 'Datasets/PureSimulations/MonomerDataset/processed/'
 
 file_names = os.listdir(save_path)
 

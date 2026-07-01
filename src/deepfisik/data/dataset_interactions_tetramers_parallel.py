@@ -246,14 +246,14 @@ def process(raw_paths,save_path,numberToProcess):
     for raw_path in raw_paths:
         idx = extract_number(os.path.basename(raw_path))
         args_list.append((raw_path, idx, r, Imean, save_path))
-    args_list = args_list[0:numberToProcess]
+    #args_list = args_list[0:numberToProcess]
 
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         list(tqdm(executor.map(process_single_file,args_list),total=len(args_list)))
 
-raw_paths = '/project/biophysics/jaqaman_lab/interKinetics/knguyen/GNN/2025/data/dataInteractionsPureSimTetramers_20250725/raw/'
-save_path = '/project/biophysics/jaqaman_lab/interKinetics/knguyen/GNN/2025/data/dataInteractionsPureSimTetramers_20250725/processed/'
+raw_paths = 'Datasets/PureSimulations/TetramerDataset/raw/'
+save_path = 'Datasets/PureSimulations/TetramerDataset/processed/'
 
 sorted_raw_path = get_sorted_full_paths_numerically(raw_paths)
-numberToProcess=30000
+numberToProcess=10
 dataset = process(sorted_raw_path,save_path,numberToProcess)

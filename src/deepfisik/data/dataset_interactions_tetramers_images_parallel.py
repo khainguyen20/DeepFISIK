@@ -25,7 +25,7 @@ import torch
 from torch_geometric.data import Dataset, Data
 from tqdm import tqdm
 import scipy.io
-from deepfisik.data.graph_generator_interactions_trimers import *
+from deepfisik.data.graph_generator_interactions_tetramers import *
 
 import re
 
@@ -166,6 +166,12 @@ def get_AP3(data):
 
     return torch.tensor(AP3, dtype = torch.float)
 
+def get_AP4(data):
+
+    AP4 = np.asarray(data['AP4'])[0]
+
+    return torch.tensor(AP4, dtype = torch.float)
+
 def get_DR2(data):
 
     DR2 = np.asarray(data['DR2'])[0]
@@ -177,6 +183,12 @@ def get_DR3(data):
     DR3 = np.asarray(data['DR3'])[0]
 
     return torch.tensor(DR3, dtype = torch.float)
+
+def get_DR4(data):
+
+    DR4 = np.asarray(data['DR4'])[0]
+
+    return torch.tensor(DR4, dtype = torch.float)
 
 def get_LF(data):
     LF = np.asarray(data['Labeled Fraction'])[0]
@@ -195,7 +207,7 @@ def process_single_file(args):
         else:
             sim = df.iloc[index_movie:].reset_index(drop=True)
 
-        graph = GraphGeneratorTrimers(sim, r)
+        graph = GraphGeneratorTetramers(sim, r)
 
         node_feats = get_node_features(sim)
         edge_feats = get_edge_features(graph, r, Imean)
@@ -206,6 +218,8 @@ def process_single_file(args):
         DR2 = get_DR2(graph)
         AP3 = get_AP3(graph)
         DR3 = get_DR3(graph)
+        AP4 = get_AP4(graph)
+        DR4 = get_DR4(graph)
         LF = get_LF(graph)
 
         data = Data(x=node_feats,
@@ -214,6 +228,7 @@ def process_single_file(args):
             DC=DC, RD = RD,
             AP2 = AP2, DR2 = DR2,
             AP3 = AP3,DR3 = DR3,
+            AP4 = AP4, DR4 =DR4,
             LF = LF
             )
 
@@ -222,8 +237,8 @@ def process_single_file(args):
 
 def process(raw_paths,save_path,numberToProcess):
 
-    r = 1.5
-    Imean = 1
+    r = 1.5/.081
+    Imean = 1000/((2**16)-1)
 
     
 
@@ -236,8 +251,8 @@ def process(raw_paths,save_path,numberToProcess):
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         list(tqdm(executor.map(process_single_file,args_list),total=len(args_list)))
 
-raw_paths = 'Datasets/PureSimulations/TrimerDataset/raw/'
-save_path = 'Datasets/PureSimulations/TrimerDataset/processed/'
+raw_paths = 'Datasets/Images/TetramerDataset/raw/'
+save_path = 'Datasets/Images/TetramerDataset/processed/'
 
 sorted_raw_path = get_sorted_full_paths_numerically(raw_paths)
 numberToProcess=10

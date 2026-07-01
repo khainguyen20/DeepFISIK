@@ -222,8 +222,8 @@ def process_single_file(args):
 
 def process(raw_paths,save_path,numberToProcess):
 
-    r = 1.5
-    Imean = 1
+    r = 1.5/.081
+    Imean = 1000/((2**16)-1)
 
     
 
@@ -236,8 +236,8 @@ def process(raw_paths,save_path,numberToProcess):
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         list(tqdm(executor.map(process_single_file,args_list),total=len(args_list)))
 
-raw_paths = 'Datasets/PureSimulations/TrimerDataset/raw/'
-save_path = 'Datasets/PureSimulations/TrimerDataset/processed/'
+raw_paths = 'Datasets/Images/TrimerDataset/raw/'
+save_path = 'Datasets/Images/TrimerDataset/processed/'
 
 sorted_raw_path = get_sorted_full_paths_numerically(raw_paths)
 numberToProcess=10
