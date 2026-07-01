@@ -36,7 +36,7 @@ from torch.utils.data import ConcatDataset, random_split
 from torch_geometric.loader import DataLoader
 
 from deepfisik.cli import (
-    DEFAULT_INTERACTIONS_ROOT,
+    DEFAULT_INTERACTION_ROOTS,
     DEFAULT_OLIGO_ROOTS,
     NormalizeCoordinates,
     transform_dimer,
@@ -454,7 +454,7 @@ def build_interactions_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--dataset-roots",
         nargs="+",
-        default=[DEFAULT_INTERACTIONS_ROOT],
+        default=[DEFAULT_INTERACTION_ROOTS],
         metavar="ROOT",
         help="One or more paths to interaction datasets. All roots are concatenated.",
     )
