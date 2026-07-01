@@ -23,10 +23,6 @@ import torch
 from torch_geometric.data import Dataset, Data
 import numpy as np
 import pandas as pd
-try:
-    from deepfisik.data.graph_generator_interactions_un import *
-except ImportError:  # legacy fallback when running the file directly
-    from graphGeneratorInteractionsUN import *
 import scipy.io
 import re
 
