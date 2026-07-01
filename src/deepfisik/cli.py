@@ -104,44 +104,44 @@ def _transform_xy(data):
     data.x = x
     return data
 
+OLIGO_META_ATTRS = ["AP2", "AP3", "AP4", "DR2", "DR3", "DR4"]
+
+def strip_oligo_meta(data):
+    for attr in OLIGO_META_ATTRS:
+        if hasattr(data, attr):
+            delattr(data, attr)
+    return data
+
 
 def transform_monomer(data):
     """Prepare a graph sample for the monomer classification label."""
     data = _transform_xy(data)
+    data = strip_oligo_meta(data)
     data.oligoLabel = torch.tensor([1, 0, 0, 0]).reshape(1, 4)
-    for attr in ["AP", "DR"]:
-        if hasattr(data, attr):
-            delattr(data, attr)
     return data
 
 
 def transform_dimer(data):
     """Prepare a graph sample for the dimer classification label."""
     data = _transform_xy(data)
+    data = strip_oligo_meta(data)
     data.oligoLabel = torch.tensor([0, 1, 0, 0]).reshape(1, 4)
-    for attr in ["AP", "DR"]:
-        if hasattr(data, attr):
-            delattr(data, attr)
     return data
 
 
 def transform_trimer(data):
     """Prepare a graph sample for the trimer classification label."""
     data = _transform_xy(data)
+    data = strip_oligo_meta(data)
     data.oligoLabel = torch.tensor([0, 0, 1, 0]).reshape(1, 4)
-    for attr in ["AP1", "AP2", "DR1", "DR2"]:
-        if hasattr(data, attr):
-            delattr(data, attr)
     return data
 
 
 def transform_tetramer(data):
     """Prepare a graph sample for the tetramer classification label."""
     data = _transform_xy(data)
+    data = strip_oligo_meta(data)
     data.oligoLabel = torch.tensor([0, 0, 0, 1]).reshape(1, 4)
-    for attr in ["AP1", "AP2", "AP3", "DR1", "DR2", "DR3"]:
-        if hasattr(data, attr):
-            delattr(data, attr)
     return data
 
 
