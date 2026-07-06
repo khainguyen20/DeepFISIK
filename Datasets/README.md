@@ -8,7 +8,7 @@ The synthetic datasets used to train and evaluate Deep-FISIK are generated in a 
 
 *Inference of VEGFR2 dimerization kinetics on the cell surface by integrating single-molecule imaging and mathematical modeling* (bioRxiv, 2025).
 
-**de Oliveira, L., Jaqaman, K.
+**de Oliveira, L., Jaqaman, K.**
 
 *FISIK: Framework for the Inference of In Situ Interaction Kinetics from Single-Molecule Imaging Data* 
 (Biophysical Journal, 2019).
@@ -32,6 +32,7 @@ For complete details regarding the biological system, simulation assumptions, st
 https://www.biorxiv.org/content/10.1101/2025.06.03.657760v1
 
 https://www.cell.com/biophysj/fulltext/S0006-3495(18)32822-4
+
 https://github.com/kjaqaman/FISIK
 
 
