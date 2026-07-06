@@ -57,6 +57,7 @@ Deep-FISIK/
 │   │   └── TetramerDataset/
 │   │
 │   └── PureSimulations/
+│       ├── MonomerDataset/
 │       ├── DimerDataset/
 │       ├── TrimerDataset/
 │       └── TetramerDataset/
@@ -91,6 +92,7 @@ Datasets/
 ```text
 Datasets/
 └── PureSimulations/
+    ├── MonomerDataset/
     ├── DimerDataset/
     ├── TrimerDataset/
     └── TetramerDataset/
