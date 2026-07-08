@@ -35,6 +35,11 @@ from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_er
 from torch.utils.data import ConcatDataset, random_split
 from torch_geometric.loader import DataLoader
 
+from deepfisik.models.gnn_dimer import GNNDimer
+from deepfisik.models.gnn_trimer import GNNTrimer
+from deepfisik.models.gnn_tetramer import GNNTetramer
+from deepfisik.models.gnn_oligo import GNNOligo
+
 from deepfisik.cli import (
     DEFAULT_INTERACTION_ROOTS,
     DEFAULT_OLIGO_ROOTS,
@@ -79,10 +84,146 @@ def _device(device_name: str | None) -> torch.device:
         return torch.device(device_name)
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+PRETRAINED_OLIGO_CHECKPOINTS = {
+    (_repo_root() / "models" / "Images" / "classification" / "ImageClassificationModel.pt").resolve(),
+    (_repo_root() / "models" / "PureSimulations" / "classification" / "PureSimulationsClassificationModel.pt").resolve()
+}
+
+def _is_pretrained_oligo_checkpoint(checkpoint: str | Path) -> bool:
+    return Path(checkpoint).resolve() in PRETRAINED_OLIGO_CHECKPOINTS
+
+
+def _pretrained_oligo_model_params(dataset) -> pd.DataFrame:
+    # Fill these with the exact hyperparameters used for your pretrained
+    # classification model.
+    return pd.DataFrame(
+        {
+            "node_model_embedding_size": [72],
+            "edge_model_embedding_size": [72],
+            "model_attention_heads": [6],
+            "model_attention_head_dimension": [72],
+            "model_layers": [10],
+            "model_attention_dropout_rate": [0],
+            "model_top_k_ratio": [1.0],
+            "model_top_k_every_n": [10],
+            "model_edge_dim": dataset[0].edge_attr.shape[1],
+            "model_feature_size": dataset[0].x.shape[1],
+            "model_batch_size": 1,
+            "model_layer_dropout_rate": [0],
+            "model_laplacian": [10],
+            "Epochs": 100,
+            "E_Patience": 10,
+            "Learning_Rate": 1e-4,
+            "Weight_Decay": 1e-3,
+            "Time_Step": 0.1,
+            "Length_Dataset": len(dataset),
+            "model_noClasses": 4,
+        }
+    )
+
+def _pretrained_interaction_model_params(dataset) -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "node_model_embedding_size": [96],
+            "edge_model_embedding_size": [96],
+            "model_attention_heads": [6],
+            "model_attention_head_dimension": [96],
+            "model_layers": [7],
+            "model_attention_dropout_rate": [0],
+            "model_top_k_ratio": [1.0],
+            "model_top_k_every_n": [10],
+            "model_edge_dim": dataset[0].edge_attr.shape[1],
+            "model_feature_size": dataset[0].x.shape[1],
+            "model_batch_size": 1,
+            "model_layer_dropout_rate": [0],
+            "model_laplacian": [10],
+            "Epochs": 100,
+            "E_Patience": 10,
+            "Learning_Rate": 1e-4,
+            "Weight_Decay": 1e-3,
+            "Time_Step": 0.1,
+            "Length_Dataset": len(dataset),
+        }
+    )
+
+PRETRAINED_INTERACTION_CHECKPOINTS = {
+    "dimer": {
+        (_repo_root() / "models" / "Images" / "dimers" / "ImageDimerModel.pt").resolve(),
+        (_repo_root() / "models" / "PureSimulations" / "dimers" / "PureSimulationsDimerModel.pt").resolve(),
+    },
+    "trimer": {
+        (_repo_root() / "models" / "PureSimulations" / "trimers" / "PureSimulationsTrimerModel.pt").resolve(),
+    },
+    "tetramer": {
+        (_repo_root() / "models" / "PureSimulations" / "tetramers" / "PureSimulationsTetramerModel.pt").resolve(),
+    },
+}
+
+def _is_pretrained_interaction_checkpoint(checkpoint: str | Path, model_name: str) -> bool:
+    return Path(checkpoint).resolve() in PRETRAINED_INTERACTION_CHECKPOINTS[model_name]
+
 def _has_truth_fields(batch, field_names: Sequence[str]) -> bool:
     """Return True when a batch contains all requested target fields."""
     return all(hasattr(batch, field) for field in field_names)
 
+
+
+def _load_state_dict_model(
+    checkpoint: str | Path,
+    device: torch.device,
+    model: torch.nn.Module,
+    model_name: str,
+) -> torch.nn.Module:
+    ckpt = torch.load(checkpoint, map_location=device)
+
+    if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
+        state_dict = ckpt["model_state_dict"]
+    elif isinstance(ckpt, dict):
+        state_dict = ckpt
+    else:
+        raise TypeError(f"Expected a checkpoint dict or state_dict, got {type(ckpt)}")
+
+    # Handle DataParallel / DistributedDataParallel checkpoints
+    if any(k.startswith("module.") for k in state_dict.keys()):
+        state_dict = {k.replace("module.", "", 1): v for k, v in state_dict.items()}
+
+    # Backward-compatibility remap for renamed heads
+    rename_maps = {
+    "dimer": {
+        "APOut": "AP2Out",
+        "DROut": "DR2Out",
+    },
+    "trimer": {
+        "AP2Out": "AP3Out",
+        "AP1Out": "AP2Out",
+        "DR2Out": "DR3Out",
+        "DR1Out": "DR2Out",
+    },
+    "tetramer": {
+        "AP3Out": "AP4Out",
+        "AP2Out": "AP3Out",
+        "AP1Out": "AP2Out",
+        "DR3Out": "DR4Out",
+        "DR2Out": "DR3Out",
+        "DR1Out": "DR2Out",
+    },
+}
+
+    rename_map = rename_maps.get(model_name, {})
+
+    remapped_state_dict = {}
+    for k, v in state_dict.items():
+        new_key = k
+        for old_name, new_name in rename_map.items():
+            new_key = new_key.replace(old_name, new_name)
+        remapped_state_dict[new_key] = v
+
+    state_dict = remapped_state_dict
+
+    model.load_state_dict(state_dict)
+    model.to(device)
+    model.eval()
+    return model
 
 def _load_model(checkpoint: str | Path, device: torch.device) -> torch.nn.Module:
     model = torch.load(checkpoint, map_location=device)
@@ -212,8 +353,13 @@ def run_oligo_inference(args: argparse.Namespace):
     dataset = _build_oligo_dataset(args.dataset_roots, args.seed, args.split)
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
     checkpoint = Path(args.checkpoint) if args.checkpoint else _default_oligo_checkpoint()
-    model = _load_model(checkpoint, device)
 
+    if _is_pretrained_oligo_checkpoint(checkpoint):
+        model_params = _pretrained_oligo_model_params(dataset)
+        model = GNNOligo(model_params=model_params)
+        model = _load_state_dict_model(checkpoint, device, model,"classification")
+    else:
+        model = _load_model(checkpoint, device)
     rows: list[dict[str, float | int]] = []
     with torch.no_grad():
         offset = 0
@@ -287,8 +433,8 @@ def _run_interactions_batch_trimer(model, batch, device, time_step: float):
     predictions = {
         "DC": _safe_inverse_dc(dc, time_step),
         "AP2": _safe_inverse_linear(ap2, 50.0),
-        "AP2": _safe_inverse_linear(ap3, 50.0),
-        "DR3": _safe_inverse_linear(dr2, 20.0 * time_step),
+        "AP3": _safe_inverse_linear(ap3, 50.0),
+        "DR2": _safe_inverse_linear(dr2, 20.0 * time_step),
         "DR3": _safe_inverse_linear(dr3, 20.0 * time_step),
         "RD": torch.clamp(rd.float(), min=0.0),
         "LF": _safe_inverse_linear(lf, 10.0),
@@ -296,14 +442,14 @@ def _run_interactions_batch_trimer(model, batch, device, time_step: float):
     truths = (
         {
             "DC": batch.DC.float(),
-            "AP2": batch.A2.float(),
-            "AP3": batch.A3.float(),
-            "DR2": batch.D2.float(),
-            "DR3": batch.D3.float(),
+            "AP2": batch.AP2.float(),
+            "AP3": batch.AP3.float(),
+            "DR2": batch.DR2.float(),
+            "DR3": batch.DR3.float(),
             "RD": batch.RD.float(),
             "LF": batch.LF.float(),
         }
-        if _has_truth_fields(batch, ("DC", "AP", "DR", "RD", "LF"))
+        if _has_truth_fields(batch, ("DC", "AP2","AP3" ,"DR2","DR3", "RD", "LF"))
         else None
     )
     return predictions, truths
@@ -356,7 +502,19 @@ def _run_interactions_inference_generic(
     dataset = _build_interactions_dataset(args.dataset_roots, args.seed, args.split)
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
     checkpoint = Path(args.checkpoint) if args.checkpoint else _default_interactions_checkpoint(model_name)
-    model = _load_model(checkpoint, device)
+
+    model_registry = {
+        "dimer": GNNDimer,
+        "trimer": GNNTrimer,
+        "tetramer": GNNTetramer,
+    }
+
+    if _is_pretrained_interaction_checkpoint(checkpoint, model_name):
+        model_params = _pretrained_interaction_model_params(dataset)
+        model = model_registry[model_name](model_params=model_params)
+        model = _load_state_dict_model(checkpoint, device, model, model_name)
+    else:
+        model = _load_model(checkpoint, device)
 
     rows: list[dict[str, float | int]] = []
     with torch.no_grad():
