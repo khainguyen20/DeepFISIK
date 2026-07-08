@@ -358,9 +358,9 @@ def train_testTetramers(
             'time':(time.time()-t0)/60
         })
 
-        results.to_csv(savePath+'intermediateResults/IntermediateResults_'+date+'.csv')
+        results.to_csv(savePath+'/intermediateResults/IntermediateResults_'+date+'.csv')
 
-        torch.save(model, savePath+'models/modelGNN_'+date+'_'+str(epoch)+'.pt')
+        torch.save(model, savePath+'/models/modelGNN_'+date+'_'+str(epoch)+'.pt')
 
         if torch.cuda.device_count() > 1:
             torch.save({
@@ -370,7 +370,7 @@ def train_testTetramers(
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
                 'loss': loss[-1],
-                }, savePath+'checkpoints/modelGNN_'+date+'_'+str(epoch)+'.pt')
+                }, savePath+'/checkpoints/modelGNN_'+date+'_'+str(epoch)+'.pt')
         else:
             torch.save({
                 'epoch': epoch,
@@ -379,7 +379,7 @@ def train_testTetramers(
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
                 'loss': loss[-1],
-                }, savePath+'checkpoints/modelGNN_'+date+'_'+str(epoch)+'.pt')
+                }, savePath+'/checkpoints/modelGNN_'+date+'_'+str(epoch)+'.pt')
 
     return model, results#, residualTrainCSV, trainAccuracyResidualCSV, testAccuracyResidualCSV
 
