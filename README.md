@@ -28,7 +28,7 @@ cd Deep-FISIK
 
 ```bash
 conda env create -f environment.yml
-conda activate deep-fisik
+conda activate deepfisik
 ```
 
 ### Install Deep-FISIK
