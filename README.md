@@ -21,7 +21,7 @@ Deep-FISIK is a graph neural network framework for estimating molecular interact
 
 ```bash
 git clone https://github.com/khainguyen20/DeepFISIK.git
-cd Deep-FISIK
+cd DeepFISIK
 ```
 
 ### Create the conda environment
