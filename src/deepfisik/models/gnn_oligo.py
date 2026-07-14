@@ -49,7 +49,7 @@ class GNNOligo(torch.nn.Module):
 
         self.noClasses = noClasses
 
-        print('GAP')
+        
 
         if node_embedding_size > attention_size:
             print("Attention head dimension must be bigger than node embedding dimension")

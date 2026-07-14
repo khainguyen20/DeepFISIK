@@ -45,7 +45,7 @@ class GNNTetramer(torch.nn.Module):
         self.n_heads = n_heads # number of attention heads
         self.layer_dropout_rate = model_params["model_layer_dropout_rate"][0]
 
-        print('GAP')
+        
 
         if node_embedding_size > attention_size:
             print("Attention head dimension must be bigger than node embedding dimension")
